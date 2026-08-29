@@ -1,4 +1,4 @@
-<!DOCTYPE html>   
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
@@ -149,17 +149,17 @@
         .peer-btn:hover {
             border-color: #1a4b7a;
         }
-        .peer-btn.selected-40 {
+        .peer-btn.selected-25 {
             border-color: #ef4444;
             background: #fecaca;
             color: #991b1b;
         }
-        .peer-btn.selected-60 {
+        .peer-btn.selected-50 {
             border-color: #eab308;
             background: #fef9c3;
             color: #854d0e;
         }
-        .peer-btn.selected-80 {
+        .peer-btn.selected-75 {
             border-color: #22c55e;
             background: #dcfce7;
             color: #166534;
@@ -424,7 +424,7 @@
     <div class="container" id="mainApp" style="display:none;">
         <div class="header">
             <div>
-                <h1 id="pageTitle">📋 主席评分 <small>19位部门负责人</small></h1>
+                <h1 id="pageTitle">📋 主席评分 <small>18位部门负责人</small></h1>
             </div>
             <div class="header-actions">
                 <span class="user-badge" id="userBadge">👤 用户</span>
@@ -444,9 +444,9 @@
 
             <div class="grade-legend" id="gradeLegend">
                 <span class="title">📊 等级</span>
-                <span class="item"><span class="dot dot-blue"></span> 80+ 良好</span>
-                <span class="item"><span class="dot dot-yellow"></span> 60-80 合格</span>
-                <span class="item"><span class="dot dot-red"></span> 60- 不合格</span>
+                <span class="item"><span class="dot dot-blue"></span> 75+ 良好</span>
+                <span class="item"><span class="dot dot-yellow"></span> 50-74 合格</span>
+                <span class="item"><span class="dot dot-red"></span> 50- 不合格</span>
                 <span style="color:#888;font-size:12px;">达标：标准差≥10 且 极差≥20</span>
             </div>
 
@@ -469,9 +469,9 @@
         <div id="peerSection" style="display:none;">
             <div style="background:#f0f4fa;border-radius:10px;padding:12px 16px;margin-bottom:12px;font-size:13px;color:#333;">
                 <strong>🤝 部门互评</strong><br>
-                请给同部门的其他负责人打分：<span style="color:#991b1b;font-weight:600;">40分（不合格）</span> ·
-                <span style="color:#854d0e;font-weight:600;">60分（合格）</span> ·
-                <span style="color:#166534;font-weight:600;">80分（良好）</span>
+                请给同部门的其他负责人打分：<span style="color:#991b1b;font-weight:600;">25分（不合格）</span> ·
+                <span style="color:#854d0e;font-weight:600;">50分（合格）</span> ·
+                <span style="color:#166534;font-weight:600;">75分（良好）</span>
             </div>
             <div id="peerContent"></div>
         </div>
@@ -490,7 +490,6 @@
             { dept: '宣传部', name: '李炳锋' },
             { dept: '宣传部', name: '葛菲' },
             { dept: '宣传部', name: '肖健' },
-            { dept: '文体部', name: '戴德音' },
             { dept: '文体部', name: '颜鼎堃' },
             { dept: '文体部', name: '杜思韬' },
             { dept: '文体部', name: '崔一茗' },
@@ -530,12 +529,11 @@
 
         // ==================== 工具函数 ====================
         function getGrade(score) {
-            if (score >= 80) return { label: '良好', cls: 'grade-good' };
-            if (score >= 60) return { label: '合格', cls: 'grade-pass' };
+            if (score >= 75) return { label: '良好', cls: 'grade-good' };
+            if (score >= 50) return { label: '合格', cls: 'grade-pass' };
             return { label: '不合格', cls: 'grade-fail' };
         }
 
-        // 计算某人的互评均分（同部门其他人给他打的平均分）
         function getPeerAverage(targetIndex) {
             var sum = 0,
                 count = 0;
@@ -548,7 +546,7 @@
                     }
                 }
             }
-            if (count === 0) return 0; // 没有互评，返回 0
+            if (count === 0) return 0;
             return Math.round(sum / count);
         }
 
@@ -625,7 +623,7 @@
                 tr.id = 'row' + i;
                 tr.innerHTML = '<td><span class="dept-tag">' + m.dept + '</span></td>' +
                     '<td><strong>' + m.name + '</strong></td>' +
-                    '<td><input type="number" id="s' + i + '" value="80" min="0" max="100" step="0.5" oninput="updateChairStats()"></td>' +
+                    '<td><input type="number" id="s' + i + '" value="75" min="0" max="100" step="0.5" oninput="updateChairStats()"></td>' +
                     '<td id="grade' + i + '"><span class="grade-tag grade-good">良好</span></td>';
                 tbody.appendChild(tr);
             }
@@ -688,7 +686,7 @@
 
             var html = '<div class="dept-title">📌 ' + currentDept + ' — 给同部门其他负责人打分</div>';
             html += '<div class="table-wrap"><table>';
-            html += '<thead><tr><th style="min-width:80px;">被评人</th><th style="min-width:200px;">打分（40/60/80）</th><th style="min-width:60px;">当前</th></tr></thead><tbody>';
+            html += '<thead><tr><th style="min-width:80px;">被评人</th><th style="min-width:200px;">打分（25/50/75）</th><th style="min-width:60px;">当前</th></tr></thead><tbody>';
 
             for (var i = 0; i < peerList.length; i++) {
                 var target = peerList[i];
@@ -699,13 +697,13 @@
                 html += '<tr>';
                 html += '<td><strong>' + targetName + '</strong></td>';
                 html += '<td><div class="peer-btn-group">';
-                var options = [40, 60, 80];
+                var options = [25, 50, 75];
+                var labels = ['不合格', '合格', '良好'];
                 for (var o = 0; o < options.length; o++) {
                     var val = options[o];
                     var selected = (currentScore === val) ? 'selected-' + val : '';
-                    var label = val === 40 ? '不合格' : (val === 60 ? '合格' : '良好');
                     html += '<button class="peer-btn ' + selected + '" onclick="setPeerScore(' + currentUserIndex + ',' + target
-                        .index + ',' + val + ')">' + val + '<br><small>' + label + '</small></button>';
+                        .index + ',' + val + ')">' + val + '<br><small>' + labels[o] + '</small></button>';
                 }
                 html += '</div></td>';
                 html += '<td><strong>' + displayScore + '</strong></td>';
@@ -766,10 +764,9 @@
             } catch (e) {}
         }
 
-        // ==================== 导出 Excel（格式一致） ====================
+        // ==================== 导出 Excel ====================
         function exportExcel() {
             if (isChair) {
-                // ===== 主席导出 =====
                 var scores = getAllScores();
                 var stats = calcStats(scores);
                 if (stats.std < PASS_STD || stats.range < PASS_RANGE) {
@@ -800,8 +797,6 @@
                 alert('✅ 导出成功！');
 
             } else {
-                // ===== 负责人导出：格式与主席一致 =====
-                // 计算所有人的互评均分（同部门其他人给他打的平均分，没有则0）
                 var peerAvgScores = [];
                 for (var i = 0; i < MINISTERS.length; i++) {
                     peerAvgScores.push(getPeerAverage(i));
@@ -814,7 +809,6 @@
                     data.push([MINISTERS[i].name, MINISTERS[i].dept, peerAvgScores[i]]);
                 }
 
-                // 追加统计（格式与主席一致）
                 var sum = 0;
                 for (var i = 0; i < peerAvgScores.length; i++) { sum += peerAvgScores[i]; }
                 var avg = sum / peerAvgScores.length;
@@ -859,7 +853,7 @@
                 document.getElementById('pageTitle').textContent = '🤝 部门互评';
                 document.getElementById('chairSection').style.display = 'none';
                 document.getElementById('peerSection').style.display = 'block';
-                document.getElementById('footerTip').textContent = '💡 负责人：给同部门其他负责人打分（40/60/80）';
+                document.getElementById('footerTip').textContent = '💡 负责人：给同部门其他负责人打分（25/50/75）';
                 document.getElementById('exportBtn').disabled = false;
                 document.getElementById('exportBtn').textContent = '⬇ 导出';
                 loadPeerData();
