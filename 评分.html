@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>主席评部长 · 打分面板</title>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js">
+    </script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: "Microsoft YaHei", -apple-system, sans-serif;
+            background: #f4f7fc;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+        .header h1 {
+            font-size: 22px;
+            color: #1a3a5c;
+        }
+        .header h1 small {
+            font-size: 14px;
+            font-weight: normal;
+            color: #666;
+            margin-left: 10px;
+        }
+        .user-badge {
+            background: #1a4b7a;
+            color: #fff;
+            padding: 6px 18px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .btn-primary {
+            background: #1a4b7a !important;
+            color: #fff !important;
+            border: none !important;
+            padding: 8px 20px;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            margin-left: 8px;
+        }
+        .btn-primary:hover {
+            background: #0f3a5f !important;
+        }
+        .btn-primary:disabled {
+            background: #ccc !important;
+            color: #888 !important;
+            cursor: not-allowed;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            padding: 10px 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            min-width: 600px;
+        }
+        th {
+            background: #f0f4fa;
+            padding: 12px 8px;
+            text-align: center;
+            font-weight: 600;
+            color: #333;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        td {
+            padding: 8px 4px;
+            text-align: center;
+            border-bottom: 1px solid #edf2f7;
+            vertical-align: middle;
+        }
+        .dept-tag {
+            background: #e9edf2;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            color: #444;
+            display: inline-block;
+            white-space: nowrap;
+        }
+        input[type="number"] {
+            width: 72px;
+            padding: 8px 0;
+            text-align: center;
+            border: 2px solid #1a4b7a;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 700;
+            background: #ffffff;
+            color: #1a3a5c;
+            transition: 0.2s;
+        }
+        input[type="number"]:focus {
+            border-color: #0f3a5f;
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(26, 75, 122, 0.15);
+        }
+        input[type=number]::-webkit-inner-spin-button,
+        input[type=number]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+
+        /* 等级标签 */
+        .grade-tag {
+            display: inline-block;
+            padding: 2px 14px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .grade-excellent {
+            background: #dcfce7;
+            color: #166534;
+        }
+        .grade-good {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        .grade-pass {
+            background: #fef9c3;
+            color: #854d0e;
+        }
+        .grade-fail {
+            background: #fecaca;
+            color: #991b1b;
+        }
+
+        .stat-pass {
+            color: #16a34a;
+            font-weight: 600;
+        }
+        .stat-fail {
+            color: #dc2626;
+            font-weight: 600;
+        }
+
+        .chair-stats {
+            background: #fff;
+            padding: 14px 24px;
+            border-radius: 10px;
+            margin: 16px 0;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 24px;
+        }
+        .chair-item {
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .chair-item .label {
+            font-weight: 700;
+            color: #1a4b7a;
+            font-size: 16px;
+        }
+        .chair-item .value {
+            font-weight: 700;
+            color: #0f172a;
+            font-size: 18px;
+        }
+
+        .footer-tip {
+            color: #888;
+            font-size: 13px;
+            margin-top: 10px;
+        }
+
+        /* 等级说明面板 */
+        .grade-legend {
+            background: #fff;
+            border-radius: 10px;
+            padding: 14px 24px;
+            margin: 16px 0;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+            display: none;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 20px 40px;
+            border-left: 4px solid #1a4b7a;
+        }
+        .grade-legend.show {
+            display: flex;
+        }
+        .grade-legend .title {
+            font-weight: 700;
+            color: #1a3a5c;
+            font-size: 15px;
+        }
+        .grade-legend .item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #333;
+        }
+        .grade-legend .dot {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border-radius: 4px;
+        }
+        .dot-green {
+            background: #22c55e;
+        }
+        .dot-blue {
+            background: #3b82f6;
+        }
+        .dot-yellow {
+            background: #eab308;
+        }
+        .dot-red {
+            background: #ef4444;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        .modal-box {
+            background: #fff;
+            padding: 40px 48px;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 420px;
+            width: 100%;
+            text-align: center;
+        }
+        .modal-box h2 {
+            font-size: 22px;
+            color: #1a3a5c;
+            margin-bottom: 8px;
+        }
+        .modal-box p {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        .modal-box input {
+            width: 100%;
+            padding: 12px 16px;
+            font-size: 18px;
+            border: 2px solid #d1d9e6;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+        .modal-box input:focus {
+            border-color: #1a4b7a;
+            outline: none;
+        }
+        .modal-box .error-msg {
+            color: #dc2626;
+            font-size: 13px;
+            min-height: 20px;
+            margin-bottom: 10px;
+        }
+        .modal-box button {
+            width: 100%;
+            padding: 12px;
+            background: #1a4b7a;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .modal-box button:hover {
+            background: #0f3a5f;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ==================== 认证弹窗 ==================== -->
+    <div class="modal-overlay" id="authModal">
+        <div class="modal-box">
+            <h2>🔐 身份认证</h2>
+            <p>请输入您的姓名进行身份验证</p>
+            <input type="text" id="authInput" placeholder="请输入姓名..." onkeydown="if(event.key==='Enter') doAuth()">
+            <div class="error-msg" id="authError"></div>
+            <button onclick="doAuth()">确认身份</button>
+        </div>
+    </div>
+
+    <!-- ==================== 主界面 ==================== -->
+    <div class="container" id="mainApp" style="display:none;">
+        <div class="header">
+            <div>
+                <h1>📋 主席评部长 · 打分面板 <small>19位部门负责人</small></h1>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+                <span class="user-badge" id="userBadge">👤 主席</span>
+                <button class="btn-primary" id="exportBtn" onclick="exportExcel()" disabled>⬇ 导出 Excel</button>
+            </div>
+        </div>
+
+        <div class="chair-stats" id="chairStats">
+            <div class="chair-item"><span class="label" id="myLabel">👤 主席</span></div>
+            <div class="chair-item"><span>平均分</span><span class="value" id="myAvg">--</span></div>
+            <div class="chair-item"><span>标准差</span><span class="value" id="myStd">--</span></div>
+            <div class="chair-item"><span>极差</span><span class="value" id="myRange">--</span></div>
+            <div class="chair-item" id="myStatus"></div>
+            <div class="chair-item" style="color:#888;font-size:13px;">✅ 通过标准：标准差 ≥ 10 且 极差 ≥ 20</div>
+        </div>
+
+        <!-- ===== 等级说明面板（达标后显示） ===== -->
+        <div class="grade-legend" id="gradeLegend">
+            <span class="title">📊 等级说明</span>
+            <span class="item"><span class="dot dot-green"></span> 80分以上 — 良好</span>
+            <span class="item"><span class="dot dot-yellow"></span> 60-80分 — 合格</span>
+            <span class="item"><span class="dot dot-red"></span> 60分以下 — 不合格</span>
+        </div>
+
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr id="tableHeader">
+                        <th style="min-width:70px;">部门</th>
+                        <th style="min-width:85px;">负责人姓名</th>
+                        <th style="min-width:90px;background:#dbeafe;color:#1a4b7a;">⭐ 您的评分</th>
+                        <th style="min-width:70px;">等级</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
+        <div class="footer-tip">💡 直接输入分数（0-100）· 标准差 ≥ 10 且 极差 ≥ 20 方可导出</div>
+    </div>
+
+    <script>
+        // ==================== 数据 ====================
+        var VALID_USERS = ['陈润材', '蔡怡硕', '倪昊'];
+
+        var MINISTERS = [
+            { dept: '学术实践部', name: '古冠群' },
+            { dept: '学术实践部', name: '郑雅文' },
+            { dept: '学术实践部', name: '郭濠源' },
+            { dept: '宣传部', name: '李炳锋' },
+            { dept: '宣传部', name: '葛菲' },
+            { dept: '宣传部', name: '肖健' },
+            { dept: '文体部', name: '戴德音' },
+            { dept: '文体部', name: '颜鼎堃' },
+            { dept: '文体部', name: '杜思韬' },
+            { dept: '文体部', name: '崔一茗' },
+            { dept: '外联部', name: '陈泽宇' },
+            { dept: '外联部', name: '陈思妍' },
+            { dept: '外联部', name: '胡钦源' },
+            { dept: '内联部', name: '唐开益' },
+            { dept: '内联部', name: '王宇扬' },
+            { dept: '内联部', name: '郑树天' },
+            { dept: '办公室', name: '宋丰源' },
+            { dept: '办公室', name: '姚远' },
+            { dept: '办公室', name: '齐子赫' }
+        ];
+
+        var PASS_STD = 10;
+        var PASS_RANGE = 20;
+        var currentUser = null;
+
+        // ==================== 获取等级 ====================
+        function getGrade(score) {
+            if (score >= 80) return { label: '良好', cls: 'grade-good' };
+            if (score >= 60) return { label: '合格', cls: 'grade-pass' };
+            return { label: '不合格', cls: 'grade-fail' };
+        }
+
+        // ==================== 认证 ====================
+        function doAuth() {
+            var input = document.getElementById('authInput');
+            var name = input.value.trim();
+            var errorEl = document.getElementById('authError');
+
+            if (!name) {
+                errorEl.textContent = '⚠️ 请输入姓名';
+                return;
+            }
+
+            if (VALID_USERS.indexOf(name) !== -1) {
+                currentUser = name;
+                document.getElementById('authModal').style.display = 'none';
+                document.getElementById('mainApp').style.display = 'block';
+                initApp();
+            } else {
+                errorEl.textContent = '❌ 未找到 "' + name + '"';
+                input.value = '';
+                input.focus();
+            }
+        }
+
+        // ==================== 获取所有分数 ====================
+        function getAllScores() {
+            var scores = [];
+            for (var i = 0; i < MINISTERS.length; i++) {
+                var el = document.getElementById('s' + i);
+                var val = parseFloat(el.value);
+                scores.push(isNaN(val) ? 0 : val);
+            }
+            return scores;
+        }
+
+        // ==================== 计算统计量 ====================
+        function calcStats(scores) {
+            var n = scores.length;
+            var sum = 0;
+            for (var i = 0; i < n; i++) { sum += scores[i]; }
+            var mean = sum / n;
+
+            var sqSum = 0;
+            for (var i = 0; i < n; i++) { sqSum += (scores[i] - mean) * (scores[i] - mean); }
+            var std = Math.sqrt(sqSum / n);
+
+            var maxVal = scores[0];
+            var minVal = scores[0];
+            for (var i = 1; i < n; i++) {
+                if (scores[i] > maxVal) maxVal = scores[i];
+                if (scores[i] < minVal) minVal = scores[i];
+            }
+            var range = maxVal - minVal;
+
+            var isPass = (std >= PASS_STD && range >= PASS_RANGE);
+            return { mean: mean, std: std, range: range, isPass: isPass };
+        }
+
+        // ==================== 构建表格 ====================
+        function buildTable() {
+            var tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+
+            for (var i = 0; i < MINISTERS.length; i++) {
+                var m = MINISTERS[i];
+                var tr = document.createElement('tr');
+                tr.id = 'row' + i;
+                tr.innerHTML = '<td><span class="dept-tag">' + m.dept + '</span></td>' +
+                    '<td><strong>' + m.name + '</strong></td>' +
+                    '<td><input type="number" id="s' + i + '" value="80" min="0" max="100" step="0.5" oninput="updateStats()"></td>' +
+                    '<td id="grade' + i + '"><span class="grade-tag grade-good">良好</span></td>';
+                tbody.appendChild(tr);
+            }
+        }
+
+        // ==================== 更新统计 ====================
+        function updateStats() {
+            var scores = getAllScores();
+            var stats = calcStats(scores);
+
+            document.getElementById('myAvg').textContent = stats.mean.toFixed(1);
+            document.getElementById('myStd').textContent = stats.std.toFixed(2);
+            document.getElementById('myRange').textContent = stats.range.toFixed(1);
+
+            // 更新每个部长的等级
+            for (var i = 0; i < MINISTERS.length; i++) {
+                var score = scores[i];
+                var grade = getGrade(score);
+                var el = document.getElementById('grade' + i);
+                el.innerHTML = '<span class="grade-tag ' + grade.cls + '">' + grade.label + '</span>';
+            }
+
+            var statusEl = document.getElementById('myStatus');
+            var exportBtn = document.getElementById('exportBtn');
+            var legendEl = document.getElementById('gradeLegend');
+
+            if (stats.isPass) {
+                statusEl.innerHTML = '✅ 通过';
+                statusEl.style.color = '#16a34a';
+                exportBtn.disabled = false;
+                exportBtn.textContent = '⬇ 导出 Excel';
+                legendEl.className = 'grade-legend show';
+            } else {
+                var reasons = [];
+                if (stats.std < PASS_STD) reasons.push('标准差 ' + stats.std.toFixed(2) + ' < ' + PASS_STD);
+                if (stats.range < PASS_RANGE) reasons.push('极差 ' + stats.range.toFixed(1) + ' < ' + PASS_RANGE);
+                statusEl.innerHTML = '🔴 ' + reasons.join('；');
+                statusEl.style.color = '#dc2626';
+                exportBtn.disabled = true;
+                exportBtn.textContent = '🔒 未达标（标准差≥10 且 极差≥20）';
+                legendEl.className = 'grade-legend';
+            }
+        }
+
+        // ==================== 初始化 ====================
+        function initApp() {
+            document.getElementById('userBadge').textContent = '👤 ' + currentUser;
+            document.getElementById('myLabel').textContent = '👤 ' + currentUser + ' 的评分';
+            buildTable();
+            updateStats();
+        }
+
+        // ==================== 导出 Excel ====================
+        function exportExcel() {
+            var scores = getAllScores();
+            var stats = calcStats(scores);
+
+            if (stats.std < PASS_STD || stats.range < PASS_RANGE) {
+                alert('❌ 未达标：标准差需 ≥ ' + PASS_STD + '，极差需 ≥ ' + PASS_RANGE + '，请调整分数后再导出。');
+                return;
+            }
+
+            var names = [];
+            for (var i = 0; i < MINISTERS.length; i++) {
+                names.push(MINISTERS[i].name);
+            }
+
+            // 两列：姓名 + 分数
+            var data = [
+                ['负责人姓名', currentUser]
+            ];
+            for (var i = 0; i < MINISTERS.length; i++) {
+                var val = parseFloat(document.getElementById('s' + i).value) || 0;
+                data.push([names[i], val]);
+            }
+
+            data.push([]);
+            data.push(['===== 统计 =====']);
+            data.push(['平均分', stats.mean.toFixed(1)]);
+            data.push(['标准差', stats.std.toFixed(2)]);
+            data.push(['极差', stats.range.toFixed(1)]);
+            data.push(['是否达标', stats.isPass ? '是' : '否']);
+
+            var wb = XLSX.utils.book_new();
+            var ws = XLSX.utils.aoa_to_sheet(data);
+            ws['!cols'] = [{ wch: 20 }, { wch: 15 }];
+            XLSX.utils.book_append_sheet(wb, ws, '评分');
+            var fileName = currentUser + '_评价结果_' + new Date().toISOString().slice(0, 10) + '.xlsx';
+            XLSX.writeFile(wb, fileName);
+            alert('✅ 导出成功！文件：' + fileName);
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && document.getElementById('authModal').style.display !== 'none') {
+                doAuth();
+            }
+        });
+    </script>
+</body>
+</html>
